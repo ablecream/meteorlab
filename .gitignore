@@ -1,0 +1,22 @@
+# Build artifacts and directories
+build/
+**/build/
+
+# Generated output directory
+pipeline_output/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# Compiled objects and libraries
+*.o
+*.a
+*.so
+
+# Executables
+adaptive_decimation/curvature_decimator
+segmentation/region_detector
