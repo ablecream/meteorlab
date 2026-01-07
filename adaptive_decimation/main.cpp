@@ -10,6 +10,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
 #include <vtkQuadricDecimation.h>
+#include <vtkSmoothPolyDataFilter.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCleanPolyData.h>
 #include <vtkPLYWriter.h>
@@ -188,18 +189,34 @@ int main(int argc, char** argv)
 
     std::cout << "[INFO] Extract merge done " << output_file << "\n";
 
+    // 1. Décimation uniforme (plus propre que le split)
+    vtkSmartPointer<vtkQuadricDecimation> decimate = vtkSmartPointer<vtkQuadricDecimation>::New();
+    decimate->SetInputData(polydata);
+    decimate->SetTargetReduction(0.7); // Réduction globale de 70%
+    decimate->Update();
+
+    // 2. Lissage Laplacien (Crucial pour supprimer le bruit des normales)
+    vtkSmartPointer<vtkSmoothPolyDataFilter> smoother = vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
+    smoother->SetInputConnection(decimate->GetOutputPort());
+    smoother->SetNumberOfIterations(50); // Ajuster selon le bruit
+    smoother->SetRelaxationFactor(0.1);
+    // On évite que le lissage ne déforme trop la forme globale
+    smoother->FeatureEdgeSmoothingOff(); 
+    smoother->BoundarySmoothingOn();
+    smoother->Update();
+
 
     // Clean the merged mesh
-    vtkSmartPointer<vtkCleanPolyData> cleanFilter = vtkSmartPointer<vtkCleanPolyData>::New();
-    cleanFilter->SetInputConnection(appendFilter->GetOutputPort());
-    cleanFilter->Update();
+    vtkSmartPointer<vtkCleanPolyData> finalClean = vtkSmartPointer<vtkCleanPolyData>::New();
+    finalClean->SetInputConnection(smoother->GetOutputPort());
+    finalClean->Update();
 
     std::cout << "[INFO] cleaning done " << output_file << "\n";
 
     // Write the final mesh to a PLY file
     vtkSmartPointer<vtkPLYWriter> writer = vtkSmartPointer<vtkPLYWriter>::New();
     writer->SetFileName(output_file.c_str());
-    writer->SetInputConnection(cleanFilter->GetOutputPort());
+    writer->SetInputConnection(finalClean->GetOutputPort());
     writer->Write();
 
     std::cout << "Decimation complete. Output saved to " << output_file << std::endl;

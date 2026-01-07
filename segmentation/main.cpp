@@ -77,12 +77,8 @@ vector<vector<int>> buildFaceAdjacency(const vector<Vertices>& polygons) {
 void growRegion(int seed_id, int region_id,
                 vector<int>& region_ids,
                 const vector<vector<int>>& adjacency,
-                const vector<Eigen::Vector3f>& normals,
-                float angle_thresh_rad,
-                const vector<Eigen::Vector4f>& planes,
-                float plane_dist_thresh,
-                const PointCloud<PointXYZ>::Ptr& input_cloud,
-                const vector<Vertices>& faces) {
+                const vector<Eigen::Vector3f>& face_normals,
+                float angle_thresh_rad) { // On retire les paramètres de plan inutiles
     queue<int> q;
     q.push(seed_id);
     region_ids[seed_id] = region_id;
@@ -93,17 +89,14 @@ void growRegion(int seed_id, int region_id,
         for (int neighbor : adjacency[current]) {
             if (region_ids[neighbor] != -1) continue;
             
-            // Check normal angle difference
-            float angle = angleBetweenNormals(normals[current], normals[neighbor]);
-            if (angle > angle_thresh_rad) continue;
+            // CRITÈRE PRINCIPAL : Angle entre la face actuelle et sa voisine
+            float angle = angleBetweenNormals(face_normals[current], face_normals[neighbor]);
             
-            // Check distance to plane
-            Eigen::Vector3f pt = input_cloud->points[faces[neighbor].vertices[0]].getVector3fMap();
-            float dist = abs(planes[region_id].head<3>().dot(pt) + planes[region_id][3]);
-            if (dist > plane_dist_thresh) continue;
-            
-            region_ids[neighbor] = region_id;
-            q.push(neighbor);
+            // Si la surface est lisse (petit angle), on continue de propager
+            if (angle < angle_thresh_rad) {
+                region_ids[neighbor] = region_id;
+                q.push(neighbor);
+            }
         }
     }
 }
@@ -111,34 +104,49 @@ void growRegion(int seed_id, int region_id,
 void mergeSmallRegions(vector<int>& region_ids, 
                       const vector<vector<int>>& adjacency,
                       int min_region_size) {
-    unordered_map<int, vector<int>> regions;
-    for (int i = 0; i < region_ids.size(); ++i) {
-        regions[region_ids[i]].push_back(i);
-    }
-
-    for (auto& [id, faces] : regions) {
-        if (faces.size() >= min_region_size) continue;
+    bool changed = true;
+    while (changed) {
+        changed = false;
         
-        // Find the most common adjacent region
-        unordered_map<int, int> adjacent_counts;
-        for (int fid : faces) {
-            for (int neighbor : adjacency[fid]) {
-                int neighbor_region = region_ids[neighbor];
-                if (neighbor_region != id) {
-                    adjacent_counts[neighbor_region]++;
-                }
+        unordered_map<int, vector<int>> regions;
+        for (int i = 0; i < region_ids.size(); ++i) {
+            regions[region_ids[i]].push_back(i);
+        }
+
+        vector<int> small_regions;
+        for (auto const& [id, faces] : regions) {
+            if (faces.size() < min_region_size) {
+                small_regions.push_back(id);
             }
         }
-        
-        if (!adjacent_counts.empty()) {
-            int new_region = max_element(adjacent_counts.begin(), adjacent_counts.end(),
-                [](const pair<int, int>& a, const pair<int, int>& b) {
-                    return a.second < b.second;
-                })->first;
+
+        for (int id : small_regions) {
+            if (regions.find(id) == regions.end() || regions[id].empty()) continue;
+
+            unordered_map<int, int> adjacent_counts;
+            for (int fid : regions[id]) {
+                for (int neighbor : adjacency[fid]) {
+                    int neighbor_region = region_ids[neighbor];
+                    if (neighbor_region != id) {
+                        adjacent_counts[neighbor_region]++;
+                    }
+                }
+            }
             
-            // Merge the small region
-            for (int fid : faces) {
-                region_ids[fid] = new_region;
+            if (!adjacent_counts.empty()) {
+                int new_region = max_element(adjacent_counts.begin(), adjacent_counts.end(),
+                    [](const pair<int, int>& a, const pair<int, int>& b) {
+                        return a.second < b.second;
+                    })->first;
+
+                if (regions[id].size() < regions[new_region].size()) {
+                    for (int fid : regions[id]) {
+                        region_ids[fid] = new_region;
+                    }
+                    regions[new_region].insert(regions[new_region].end(), regions[id].begin(), regions[id].end());
+                    regions.erase(id);
+                    changed = true;
+                }
             }
         }
     }
@@ -231,13 +239,11 @@ int main(int argc, char** argv) {
         planes.push_back(plane);
 
         // Grow region with additional parameters
-        growRegion(i, region_id++, region_ids, adjacency, face_normals, 
-                  angle_threshold_rad, planes, plane_dist_threshold,
-                  input_cloud, faces);
+        growRegion(i, region_id++, region_ids, adjacency, face_normals, angle_threshold_rad);
     }
 
     // Merge small regions
-    const int min_region_size = 50; // Adjust based on your mesh
+    const int min_region_size = 500; // Adjust based on your mesh
     mergeSmallRegions(region_ids, adjacency, min_region_size);
 
     // Reassign region IDs to be contiguous
