@@ -4,6 +4,7 @@ build/
 
 # Generated output directory
 pipeline_output/
+reconstructed_debug/
 
 # CMake generated files
 CMakeCache.txt
@@ -20,3 +21,4 @@ Makefile
 # Executables
 adaptive_decimation/curvature_decimator
 segmentation/region_detector
+
