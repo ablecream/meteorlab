@@ -93,24 +93,15 @@ def cluster_and_plot_pca(features, names, n_clusters):
 
 
 def visualize_clusters_in_3d(mesh_folder, names, labels):
-    """
-    Arranges and colors meshes in a 3D scene based on their cluster labels.
-    
-    Parameters:
-    - mesh_folder: Path to the folder containing your .obj/.ply meshes.
-    - names: List of meteorite names (from your JSON/clustering script).
-    - labels: The K-Means cluster labels corresponding to the names.
-    """
+
     print("Building 3D Scene. This might take a moment depending on mesh sizes...")
     scene = trimesh.Scene()
-    
-    # 1. Define a vibrant color palette for the clusters (RGBA format)
     cluster_colors = [
-        [255, 99, 71, 255],   # Tomato Red
-        [60, 179, 113, 255],  # Medium Sea Green
-        [65, 105, 225, 255],  # Royal Blue
-        [255, 215, 0, 255],   # Gold
-        [138, 43, 226, 255]   # Blue Violet
+        [255, 99, 71, 255],   
+        [60, 179, 113, 255],  
+        [65, 105, 225, 255],  
+        [255, 215, 0, 255],   
+        [138, 43, 226, 255]   
     ]
     
     cluster_counts = {}
