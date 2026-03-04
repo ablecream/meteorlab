@@ -58,7 +58,7 @@ def cluster_and_plot_pca(features, names, n_clusters):
     # Plotting
     plt.figure(figsize=(10, 8))
     
-    # Scatter plot, colored by K-Means cluster
+    #K-Means cluster
     scatter = plt.scatter(
         features_2d[:, 0], features_2d[:, 1], 
         c=labels, cmap='viridis', s=100, alpha=0.8, edgecolors='w'

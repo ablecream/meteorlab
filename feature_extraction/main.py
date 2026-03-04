@@ -128,7 +128,7 @@ def process_mesh_and_reconstruct(filepath, name):
             coeffs_l.append(c)
         coeffs.append(coeffs_l)
 
-    recon_path = os.path.join(RECON_FOLDER, f"{name}_reconstructed.obj")
+    recon_path = os.path.join(RECON_FOLDER, f"{name}.obj")
     save_reconstruction(coeffs, recon_path)
 
     # Rotation-Invariant Descriptor 
