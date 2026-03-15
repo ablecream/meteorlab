@@ -6,6 +6,7 @@ build/
 pipeline_output/
 reconstructed_debug/
 Nasa_reconstructed/
+NASA_obj/
 
 # CMake generated files
 CMakeCache.txt

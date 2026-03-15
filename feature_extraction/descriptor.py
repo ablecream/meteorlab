@@ -50,23 +50,42 @@ def get_sh_data(mesh_path, lmax=15):
         "coefficients": clm.to_array().tolist()
     }
 
-def batch_process_to_json(model_paths, output_json_path, lmax=15):
-    """Processes a list of 3D models and saves their SH data to a JSON file."""
-    results = []
+def batch_process_to_json(models_by_subfolder, output_data_path, output_desc_path, lmax=15):
+    """Processes organized lists of 3D models and saves data to nested JSON files."""
+    results_full = {}
+    results_desc = {}
     failed_models = []
     
-    for path in tqdm(model_paths, desc="Processing NASA Models"):
-        model_name = os.path.splitext(os.path.basename(path))[0]
-        try:
-            sh_data = get_sh_data(path, lmax)
-            results.append({model_name: sh_data})
-        except Exception as e:
-            failed_models.append((model_name, str(e)))
-            
-    with open(output_json_path, 'w') as json_file:
-        json.dump(results, json_file, indent=4)
+    for subfolder, paths in models_by_subfolder.items():
+        results_full[subfolder] = {}
+        results_desc[subfolder] = {}
         
-    print(f"\nBatch processing complete. Saved to {output_json_path}")
+        for path in tqdm(paths, desc=f"Processing {subfolder}"):
+            model_name = os.path.splitext(os.path.basename(path))[0]
+            try:
+                sh_data = get_sh_data(path, lmax)
+                
+                # Assign full data (spectrum + coefficients) to the main JSON dict
+                results_full[subfolder][model_name] = sh_data
+                
+                # Assign ONLY the spectrum descriptor to the descriptors JSON dict
+                results_desc[subfolder][model_name] = sh_data["spectrum"]
+                
+            except Exception as e:
+                failed_models.append((f"{subfolder}/{model_name}", str(e)))
+                
+    # Save the full reconstruction data
+    with open(output_data_path, 'w') as json_file:
+        json.dump(results_full, json_file, indent=4)
+        
+    # Save the standalone descriptors
+    with open(output_desc_path, 'w') as desc_file:
+        json.dump(results_desc, desc_file, indent=4)
+        
+    print(f"\nBatch processing complete.")
+    print(f" -> Full Reconstruction Data saved to: {output_data_path}")
+    print(f" -> Clean Descriptors saved to: {output_desc_path}")
+    
     if failed_models:
         print(f"\nFailed to process {len(failed_models)} models:")
         for name, err in failed_models:
@@ -106,7 +125,7 @@ def create_trimesh_from_sh_grid(grid_recon):
 
 def export_reconstructions(json_path, output_folder):
     """
-    Reads the JSON file, reconstructs all models, and exports them to a target folder.
+    Reads the nested JSON file, reconstructs all models, and exports them to matched subfolders.
     """
     os.makedirs(output_folder, exist_ok=True)
     
@@ -115,39 +134,48 @@ def export_reconstructions(json_path, output_folder):
         
     print(f"\nExporting reconstructed models to '{output_folder}'...")
     
-    for item in tqdm(data, desc="Exporting Meshes"):
-        model_name = list(item.keys())[0]
-        model_data = item[model_name]
+    for subfolder, models in data.items():
+        # Create matching subfolder in the output directory
+        sub_out_dir = os.path.join(output_folder, subfolder)
+        os.makedirs(sub_out_dir, exist_ok=True)
         
-        coeffs_array = np.array(model_data["coefficients"])
-        clm = pysh.SHCoeffs.from_array(coeffs_array)
-        grid_recon = clm.expand()
-        
-        recon_mesh = create_trimesh_from_sh_grid(grid_recon)
-        
-        export_path = os.path.join(output_folder, f"{model_name}_recon.obj")
-        recon_mesh.export(export_path)
+        for model_name, model_data in tqdm(models.items(), desc=f"Exporting {subfolder}"):
+            coeffs_array = np.array(model_data["coefficients"])
+            clm = pysh.SHCoeffs.from_array(coeffs_array)
+            grid_recon = clm.expand()
+            
+            recon_mesh = create_trimesh_from_sh_grid(grid_recon)
+            
+            export_path = os.path.join(sub_out_dir, f"{model_name}_recon.obj")
+            recon_mesh.export(export_path)
 
 def visualize_reconstructions(json_path, original_models_paths, num_to_visualize=3):
-    """Visualizes models in a 2-row grid: Originals on top, Reconstructions on bottom."""
+    """Visualizes models by locating their data inside the nested JSON."""
     with open(json_path, 'r') as f:
         data = json.load(f)
         
     models_to_plot = original_models_paths[:num_to_visualize]
     num_models = len(models_to_plot)
     
+    if num_models == 0:
+        return
+
     fig = plt.figure(figsize=(5 * num_models, 10))
     
     for i, path in enumerate(models_to_plot):
-        model_name = Path(path).stem
+        p = Path(path)
+        model_name = p.stem
+        subfolder = p.parent.name # Extracts 'APOLLO' or 'ANTARCTIC' from the path
         
         orig_mesh = trimesh.load(path, force='mesh')
         orig_mesh.apply_translation(-orig_mesh.centroid)
         orig_mesh.apply_scale(1.0 / orig_mesh.scale)
         
-        model_data = next((item[model_name] for item in data if model_name in item), None)
+        # Access the specific subfolder in the JSON data
+        model_data = data.get(subfolder, {}).get(model_name)
+        
         if not model_data:
-            print(f"Skipping visualization for {model_name} - no data found.")
+            print(f"Skipping visualization for {subfolder}/{model_name} - no data found.")
             continue
             
         coeffs_array = np.array(model_data["coefficients"])
@@ -174,26 +202,37 @@ def visualize_reconstructions(json_path, original_models_paths, num_to_visualize
     plt.show()
 
 if __name__ == "__main__":
-    folder_path = "../Nasa_obj" 
-    output_mesh_folder = "../Nasa_reconstructed" 
-    
+    folder_path = Path("../Nasa_obj") 
+    output_mesh_folder = Path("../Nasa_reconstructed") 
     valid_extensions = {'.obj', '.stl', '.ply', '.off'}
-    folder = Path(folder_path)
     
-    my_models = [
-        str(file) for file in folder.iterdir() 
-        if file.is_file() and file.suffix.lower() in valid_extensions
-    ]
+    models_by_subfolder = {}
     
-    if not my_models:
-        print(f"No 3D models found in '{folder_path}' matching {valid_extensions}")
+    # Identify all subfolders and group valid 3D files
+    if folder_path.exists():
+        for subfolder in [d for d in folder_path.iterdir() if d.is_dir()]:
+            files = [str(f) for f in subfolder.iterdir() if f.is_file() and f.suffix.lower() in valid_extensions]
+            if files:
+                models_by_subfolder[subfolder.name] = files
+
+    # Flatten the list just for the visualizer
+    flat_model_paths = [f for files in models_by_subfolder.values() for f in files]
+
+    if not models_by_subfolder:
+        print(f"No 3D models or subfolders found in '{folder_path}'. Please ensure folders like 'ANTARCTIC' or 'APOLLO' exist.")
     else:
-        print(f"Found {len(my_models)} models. Starting extraction...")
-        output_file = "meteorite_data.json"
+        total_models = sum(len(v) for v in models_by_subfolder.values())
+        print(f"Found {total_models} models across {len(models_by_subfolder)} subfolders. Starting extraction...")
         
-        batch_process_to_json(my_models, output_file, lmax=20)
+        output_data_file = "meteorite_data.json"
+        output_desc_file = "descriptors.json"
         
-        export_reconstructions(output_file, output_mesh_folder)
+        # 1. Extract data and build BOTH nested JSONs
+        batch_process_to_json(models_by_subfolder, output_data_file, output_desc_file, lmax=20)
         
-        print("\nGenerating visualization...")
-        visualize_reconstructions(output_file, my_models, num_to_visualize=1)
+        # 2. Reconstruct models into mapped subdirectories using the full data JSON
+        export_reconstructions(output_data_file, output_mesh_folder)
+        
+        # 3. Visualize a sample model
+        # print("\nGenerating visualization...")
+        # visualize_reconstructions(output_data_file, flat_model_paths, num_to_visualize=1)

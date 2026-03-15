@@ -72,7 +72,7 @@ def save_reconstruction(coeffs, filename):
                 p4 = p3 - 1
                 f.write(f"f {p1} {p2} {p3} {p4}\n")
 
-def process_mesh_and_reconstruct(filepath, name):
+def process_mesh_and_reconstruct(filepath, name, out_recon_folder):
     """Loads mesh, normalizes, raycasts, computes SH, and returns descriptor."""
     try:
         mesh = trimesh.load(filepath, force='mesh')
@@ -101,7 +101,6 @@ def process_mesh_and_reconstruct(filepath, name):
     theta = np.arccos(z)
     rad = np.sqrt(1 - z * z)
 
-    
     ray_dirs = np.stack([rad * np.cos(phi), rad * np.sin(phi), z], axis=1)
     ray_origins = np.zeros_like(ray_dirs)
 
@@ -128,7 +127,8 @@ def process_mesh_and_reconstruct(filepath, name):
             coeffs_l.append(c)
         coeffs.append(coeffs_l)
 
-    recon_path = os.path.join(RECON_FOLDER, f"{name}.obj")
+    # Save to the specific subfolder passed into the function
+    recon_path = os.path.join(out_recon_folder, f"{name}.obj")
     save_reconstruction(coeffs, recon_path)
 
     # Rotation-Invariant Descriptor 
@@ -144,27 +144,55 @@ def main():
         print(f"Error: Input folder '{INPUT_FOLDER}' not found.")
         return
 
-    os.makedirs(RECON_FOLDER, exist_ok=True)
-
     results = {}
-    print(f"Processing... Check '{RECON_FOLDER}' for 3D results.")
+    search_patterns = ["*.obj", "*.off", "*.ply", "*.stl"]
 
-    search_patterns = ["*.obj", "*.off", "*.ply"]
-    files_to_process = []
-    for pattern in search_patterns:
-        files_to_process.extend(glob.glob(os.path.join(INPUT_FOLDER, pattern)))
+    # Identify all subfolders inside INPUT_FOLDER
+    subfolders = [f for f in os.listdir(INPUT_FOLDER) if os.path.isdir(os.path.join(INPUT_FOLDER, f))]
 
-    for filepath in files_to_process:
-        name = os.path.splitext(os.path.basename(filepath))[0]
-        print(f" > {name}... ", end="", flush=True)
+    if not subfolders:
+        print(f"No subfolders found inside '{INPUT_FOLDER}'. Please ensure 'ANTARCTIC', 'APOLLO', etc., exist.")
+        return
 
-        desc = process_mesh_and_reconstruct(filepath, name)
-        if desc:
-            results[name] = desc
-            print("Done.")
+    for subfolder in subfolders:
+        print(f"\n--- Processing Subfolder: {subfolder} ---")
+        
+        # Define paths for this specific subfolder
+        sub_input_dir = os.path.join(INPUT_FOLDER, subfolder)
+        sub_recon_dir = os.path.join(RECON_FOLDER, subfolder)
+        
+        # Create matching output directory for reconstructions
+        os.makedirs(sub_recon_dir, exist_ok=True)
+        
+        # Initialize the dictionary key for this subfolder
+        results[subfolder] = {}
 
+        # Grab all matching files
+        files_to_process = []
+        for pattern in search_patterns:
+            files_to_process.extend(glob.glob(os.path.join(sub_input_dir, pattern)))
+
+        if not files_to_process:
+            print(f"No 3D models found in {subfolder}.")
+            continue
+
+        for filepath in files_to_process:
+            name = os.path.splitext(os.path.basename(filepath))[0]
+            print(f" > Extracting {name}... ", end="", flush=True)
+
+            # Pass the subfolder path to the function so it knows where to save
+            desc = process_mesh_and_reconstruct(filepath, name, sub_recon_dir)
+            
+            if desc:
+                # Store the descriptor under the correct subfolder key
+                results[subfolder][name] = desc
+                print("Done.")
+
+    # Export the final nested JSON
     with open(OUTPUT_JSON, 'w') as json_file:
         json.dump(results, json_file, indent=2)
+        
+    print(f"\nProcessing complete. Data saved to '{OUTPUT_JSON}'.")
 
 if __name__ == "__main__":
     main()
