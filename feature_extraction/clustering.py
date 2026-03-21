@@ -9,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from scipy.cluster.hierarchy import dendrogram, linkage
+from collections import Counter
 
 # --- CONFIGURATION ---
 DESCRIPTORS_JSON = "descriptors.json"
@@ -181,6 +182,47 @@ def visualize_clusters_in_3d(mesh_folder, names, labels):
         
     scene.show()
 
+
+def calculate_clustering_accuracy(names, labels, name_to_origin, n_clusters):
+    """
+    Calculates the majority-vote accuracy (Purity) of the K-Means clusters 
+    against the ground truth origins.
+    """
+    total_correct = 0
+    total_samples = len(names)
+    
+    print("\n--- Clustering Accuracy Analysis ---")
+    
+    # Analyze each cluster one by one
+    for cluster_id in range(n_clusters):
+        # Find all meteorites assigned to this cluster
+        indices_in_cluster = [i for i, label in enumerate(labels) if label == cluster_id]
+        
+        if not indices_in_cluster:
+            continue
+            
+        # Get their real origins
+        real_origins = [name_to_origin.get(names[i], "Unknown") for i in indices_in_cluster]
+        
+        # Count the occurrences of each origin
+        origin_counts = Counter(real_origins)
+        
+        # Find the majority origin in this cluster
+        majority_origin, majority_count = origin_counts.most_common(1)[0]
+        
+        # The majority count represents the "correct" assignments for this cluster
+        total_correct += majority_count
+        
+        print(f"Cluster {cluster_id} -> Assigned Label: '{majority_origin}' "
+              f"({majority_count}/{len(indices_in_cluster)} correct)")
+        
+    # Calculate global accuracy
+    overall_accuracy = (total_correct / total_samples) * 100
+    print("-" * 40)
+    print(f"OVERALL GEOMETRIC ACCURACY: {overall_accuracy:.2f}%\n")
+    
+    return overall_accuracy
+
 def main():
     if not os.path.exists(METADATA_JSON):
         print(f"Error: Fichier {METADATA_JSON} introuvable.")
@@ -212,8 +254,17 @@ def main():
     
     print(f"\nRunning K-Means (K={n_clusters}) and PCA...")
     labels = cluster_and_plot_pca(features_scaled, names, name_to_origin, n_clusters)
+
+    print(f"\nRunning K-Means (K={n_clusters}) and PCA...")
+    labels = cluster_and_plot_pca(features_scaled, names, name_to_origin, n_clusters)
     
-    visualize_clusters_in_3d(MESH_FOLDER, names, labels)
+    # --- ADD THIS LINE HERE ---
+    calculate_clustering_accuracy(names, labels, name_to_origin, n_clusters)
+    
+    # visualize_clusters_in_3d(MESH_FOLDER, names, labels)
+
+
+
 
 if __name__ == "__main__":
     main()

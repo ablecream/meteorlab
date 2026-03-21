@@ -19,6 +19,7 @@ Makefile
 *.o
 *.a
 *.so
+*.zip
 
 # Executables
 adaptive_decimation/curvature_decimator
