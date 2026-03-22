@@ -1,0 +1,35 @@
+{
+
+    "Regolith Breccia": "Breccia",
+    "Granitic Breccia": "Breccia",
+    "Crystalline Matrix Breccia": "Breccia",
+    "Ancient Regolith Breccia": "Breccia",
+    "Glass-Coated Dimict Breccia": "Breccia",
+    "Fragmental Breccia": "Breccia",
+    "Pyroclastic-glass Breccia": "Breccia",
+    "Lunar Anorthositic Breccia": "Breccia",
+    "Eucrite (Polymict)": "Breccia",
+    "Howardite": "Breccia",
+    "Ureilite (Polymict)": "Breccia",
+    "CM2 Chondrite Breccia": "Chondrite", 
+    
+
+    "High-Ti, High-K Ilmenite Basalt": "Basalt",
+    "Feldspathic Basalt": "Basalt",
+    "Low-Ti Pigeonite Basalt": "Basalt",
+    "Low-Ti Olivine Basalt": "Basalt",
+    "Low-Ti Basalt": "Basalt",
+    "High-Ti Basalt": "Basalt",
+    "Shergottite": "Basalt",
+
+    "Ferroan Anorthosite": "Plutonic",
+    "Troctolite": "Plutonic",
+    "Shocked Norite": "Plutonic",
+    "SNC Orthopyroxenite": "Plutonic",
+
+    "CR2 Chondrite": "Chondrite",
+    "CK5 Chondrite": "Chondrite",
+    "CB Chondrite": "Chondrite",
+
+    "Iron-IAB": "Iron"
+}
