@@ -7,6 +7,8 @@ pipeline_output/
 reconstructed_debug/
 Nasa_reconstructed/
 NASA_obj/
+feature_extraction/Pipeline_SH_Output/Reconstructed_Fibonacci_ANTARCTIC
+feature_extraction/Pipeline_SH_Output/Reconstructed_PySHTools_ANTARCTIC
 
 # CMake generated files
 CMakeCache.txt

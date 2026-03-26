@@ -1,0 +1,160 @@
+{
+    "metadata": {
+        "version": "1.1",
+        "last_updated": "2024-06-01",
+        "source": "NASA Sample Catalog",
+        "number_of_samples": 21,
+        "number_of_origins": 6,
+        "number_of_classifications": 27,
+        "number_of_macro_categories": 5
+    },
+    "ANTARCTIC": [
+        {
+            "name": "MIL090036-35_SFM_Web-Resolution-Model_Coordinate-Registered",
+            "classification": "Lunar Anorthositic Breccia",
+            "macro_category": "Breccia",
+            "collected": "ANSMET Field Season 1990, Miller Range, Antarctica",
+            "origin": "Moon"
+        },
+        {
+            "name": "ALH84001-55_SFM_Web-Resolution-Model_Coordinate-Registered",
+            "classification": "SNC Orthopyroxenite",
+            "macro_category": "Plutonic",
+            "collected": "ANSMET Field Season 1984, Allan Hills, Antarctica",
+            "origin": "Mars"
+        },
+        {
+            "name": "EET79001-2_SFM_Web-Resolution-Model_Coordinate-Registered",
+            "classification": "Shergottite",
+            "macro_category": "Basalt",
+            "collected": "ANSMET Field Season 1979, Elephant Moraine, Antarctica",
+            "origin": "Mars"
+        },
+        {
+            "name": "EET79001-312_SFM_Web-Resolution-Model_Coordinate-Registered",
+            "classification": "Shergottite",
+            "macro_category": "Basalt",
+            "collected": "ANSMET Field Season 1979, Elephant Moraine, Antarctica",
+            "origin": "Mars"
+        },
+        {
+            "name": "RBT04261-0_SFM_Web-Resolution-Model_Coordinate-Registered",
+            "classification": "Shergottite",
+            "macro_category": "Basalt",
+            "collected": "ANSMET Field Season 2004, Roberts Massif, Antarctica",
+            "origin": "Mars"
+        },
+        {
+            "name": "GRO17049-0_SFM_Web-Resolution-Model_Coordinate-Unregistered",
+            "classification": "Eucrite (Polymict)",
+            "macro_category": "Breccia",
+            "collected": "ANSMET Field Season 2017, Grosvenor Mountains, Antarctica",
+            "origin": "Vesta"
+        },
+        {
+            "name": "GRO17049-8_SFM_Web-Resolution-Model_Coordinate-Registered",
+            "classification": "Eucrite (Polymict)",
+            "macro_category": "Breccia",
+            "collected": "ANSMET Field Season 2017, Grosvenor Mountains, Antarctica",
+            "origin": "Vesta"
+        },
+        {
+            "name": "EET87720-0_SFM_Web-Resolution-Model_Coordinate-Registered",
+            "classification": "Ureilite (Polymict)",
+            "macro_category": "Breccia",
+            "collected": "ANSMET Field Season 1987, Elephant Moraine, Antarctica",
+            "origin": "Unknown C-Complex Type Asteroid"
+        },
+        {
+            "name": "GRO17063-0_Web-Resolution_Coordinate-Unregistered",
+            "classification": "CR2 Chondrite",
+            "macro_category": "Chondrite",
+            "collected": "ANSMET Field Season 2017, Grosvenor Mountains, Antarctica",
+            "origin": "Unknown C-Complex Type Asteroid"
+        },
+        {
+            "name": "GRO17063-3_SFM_Web-Resolution-Model_Coordinate-Registered",
+            "classification": "CR2 Chondrite",
+            "macro_category": "Chondrite",
+            "collected": "ANSMET Field Season 2017, Grosvenor Mountains, Antarctica",
+            "origin": "Unknown C-Complex Type Asteroid"
+        },
+        {
+            "name": "LON94102-37_SFM_Web-Resolution-Model_Coordinate-Registered",
+            "classification": "CM2 Chondrite Breccia",
+            "macro_category": "Chondrite",
+            "collected": "ANSMET Field Season 1994, Lonewolf Nunataks, Antarctica",
+            "origin": "Unknown C-Complex Type Asteroid"
+        },
+        {
+            "name": "GRO17059-0_SFM_Web-Resolution-Model_Coordinate-Unregistered",
+            "classification": "CK5 Chondrite",
+            "macro_category": "Chondrite",
+            "collected": "ANSMET Field Season 2017, Grosvenor Mountains, Antarctica",
+            "origin": "Unknown K-Type Asteroid"
+        },
+        {
+            "name": "MIL15307-0_SFM_Web-Resolution-Model_Coordinate-Unregistered",
+            "classification": "CK5 Chondrite",
+            "macro_category": "Chondrite",
+            "collected": "ANSMET Field Season 2015, Miller Range, Antarctica",
+            "origin": "Unknown K-Type Asteroid"
+        },
+        {
+            "name": "MIL15307-5_SFM_Web-Resolution-Model_Coordinate-Registered",
+            "classification": "CK5 Chondrite",
+            "macro_category": "Chondrite",
+            "collected": "ANSMET Field Season 2015, Miller Range, Antarctica",
+            "origin": "Unknown K-Type Asteroid"
+        },
+        {
+            "name": "GRO17102-0_SFM_Web-Resolution-Model_Coordinate-Unregistered",
+            "classification": "Iron-IAB",
+            "macro_category": "Iron",
+            "collected": "ANSMET Field Season 2017, Grosvenor Mountains, Antarctica",
+            "origin": "Unknown M-Type Asteroid"
+        },
+        {
+            "name": "MIL07411-0_SFM_Full-Resolution-Model_Coordinate-Unregistered",
+            "classification": "CB Chondrite",
+            "macro_category": "Chondrite",
+            "collected": "ANSMET Field Season 2007, Miller Range, Antarctica",
+            "origin": "Unknown M-Type Asteroid"
+        },
+        {
+            "name": "GRO17099-0_sub_SFM_Web-Resolution-Model_Coordinate-Registered",
+            "classification": "Eucrite (Polymict)",
+            "macro_category": "Breccia",
+            "collected": "ANSMET Field Season 2017, Grosvenor Mountains, Antarctica",
+            "origin": "Vesta"
+        },
+        {
+            "name": "GRO17099-0_whole_SFM_Web-Resolution-Model_Coordinate-Unregistered",
+            "classification": "Eucrite (Polymict)",
+            "macro_category": "Breccia",
+            "collected": "ANSMET Field Season 2017, Grosvenor Mountains, Antarctica",
+            "origin": "Vesta"
+        },
+        {
+            "name": "GRO17176-0_SFM_Web-Resolution-Model_Coordinate-Unregistered",
+            "classification": "Eucrite (Polymict)",
+            "macro_category": "Breccia",
+            "collected": "ANSMET Field Season 2017, Grosvenor Mountains, Antarctica",
+            "origin": "Vesta"
+        },
+        {
+            "name": "LAR12326-32_SFM_Web-Resolution-Model_Coordinate-Registered",
+            "classification": "Howardite",
+            "macro_category": "Breccia",
+            "collected": "ANSMET Field Season 2012, Larkman Nunatak, Antarctica",
+            "origin": "Vesta"
+        },
+        {
+            "name": "PRA04402-23_SFM_Web-Resolution-Model_Coordinate-Registered",
+            "classification": "Howardite",
+            "macro_category": "Breccia",
+            "collected": "ANSMET Field Season 2000, Mount Pratt, Antarctica",
+            "origin": "Vesta"
+        }
+    ]
+}
